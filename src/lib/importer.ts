@@ -24,8 +24,8 @@ export function clearPendingDraft() {
   pendingDraft = null
 }
 
-export async function fetchFromUrl(url: string): Promise<ImportResult> {
-  const res = await fetch(`/api/import?url=${encodeURIComponent(url)}`)
+export async function fetchFromUrl(url: string, signal?: AbortSignal): Promise<ImportResult> {
+  const res = await fetch(`/api/import?url=${encodeURIComponent(url)}`, { signal })
   const data = await res.json()
   if (!res.ok) throw new Error(data.error ?? 'Nie udało się pobrać strony')
   return data as ImportResult

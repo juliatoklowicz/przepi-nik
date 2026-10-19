@@ -29,7 +29,7 @@ export default function Settings() {
       const data = JSON.parse(await file.text()) as { recipes?: Recipe[] }
       if (!Array.isArray(data.recipes)) throw new Error('To nie jest kopia zapasowa Przepiśnika.')
       for (const r of data.recipes) await store.save(r)
-      setMsg(`Wczytano ${data.recipes.length} przepisów.`)
+      setMsg(`Wczytano przepisy: ${data.recipes.length}.`)
     } catch (e) {
       setMsg(`Nie udało się wczytać pliku: ${e instanceof Error ? e.message : e}`)
     }
@@ -46,6 +46,7 @@ export default function Settings() {
       </header>
 
       <section className="panel settings-list">
+        <h2>Dodawanie przepisów</h2>
         <label className="switch">
           <input
             type="checkbox"
@@ -75,7 +76,7 @@ export default function Settings() {
           </>
         ) : (
           <p className="notice">
-            Tryb lokalny: przepisy są zapisane tylko w tej przeglądarce. Żeby mieć je na telefonie i komputerze, podłącz Supabase (instrukcja w pliku README).
+            Przepisy są zapisane tylko w tej przeglądarce. Wyczyszczenie danych przeglądarki je usunie, więc co jakiś czas pobierz kopię zapasową poniżej.
           </p>
         )}
       </section>
@@ -92,12 +93,20 @@ export default function Settings() {
           </button>
           <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={(e) => importBackup(e.target.files?.[0])} />
         </div>
-        {msg && <p className="notice">{msg}</p>}
+        {msg && (
+          <p className="notice" role="status">
+            {msg}
+          </p>
+        )}
       </section>
 
-      <p className="muted small center">
-        Wartości odżywcze są szacunkowe: wbudowana baza składników i Open Food Facts.
-      </p>
+      <section className="panel settings-list">
+        <h2>Skąd są kalorie?</h2>
+        <p>
+          Przepiśnik dopasowuje każdy składnik do wbudowanej bazy ok. 220 produktów albo do bazy produktów ze sklepów (Open Food Facts) i przelicza łyżki,
+          szklanki czy sztuki na gramy. Wynik jest szacunkowy – składniki, których nie udało się dopasować, są oznaczone na żółto.
+        </p>
+      </section>
     </div>
   )
 }

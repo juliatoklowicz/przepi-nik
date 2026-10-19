@@ -418,3 +418,16 @@ export function displayIngredient(ing: Ingredient, factor: number): string {
   const unit = unitLabel(ing.unit, Number(formatAmount(amount, ing.unit).replace(',', '.')) || amount)
   return [formatAmount(amount, ing.unit), unit, ing.name].filter(Boolean).join(' ')
 }
+
+const STEP_SKIP = new Set(['swieze', 'swiezy', 'swieza', 'drobno', 'posiekane', 'posiekany', 'pokrojone', 'mielone', 'mielony', 'starty', 'starte', 'duze', 'duzy', 'duza', 'male', 'maly', 'mala', 'ugotowane', 'ugotowany'])
+
+/** Składniki, o których mowa w danym kroku (do trybu gotowania), w kolejności z listy. */
+export function ingredientsInStep(step: string, ingredients: Ingredient[]): Ingredient[] {
+  const stepWords = words(step)
+  if (!stepWords.length) return []
+  return ingredients.filter((ing) => {
+    if (ing.header) return false
+    const keys = words([ing.name, ing.food?.name ?? ''].join(' ')).filter((w) => w.length >= 4 && !STEP_SKIP.has(stripDiacritics(w)))
+    return keys.some((k) => stepWords.some((sw) => sw.length >= 3 && tokenScore(k, sw) >= 4))
+  })
+}

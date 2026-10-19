@@ -5,21 +5,25 @@ import { supabase } from './store'
 interface AuthState {
   session: Session | null
   loading: boolean
+  /** Wejście z linku „ustaw nowe hasło” z e-maila. */
+  recovery: boolean
 }
 
-const AuthContext = createContext<AuthState>({ session: null, loading: false })
+const AuthContext = createContext<AuthState & { endRecovery: () => void }>({ session: null, loading: false, recovery: false, endRecovery: () => {} })
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>({ session: null, loading: !!supabase })
+  const [state, setState] = useState<AuthState>({ session: null, loading: !!supabase, recovery: false })
 
   useEffect(() => {
     if (!supabase) return
-    supabase.auth.getSession().then(({ data }) => setState({ session: data.session, loading: false }))
-    const { data } = supabase.auth.onAuthStateChange((_e, session) => setState({ session, loading: false }))
+    supabase.auth.getSession().then(({ data }) => setState((s) => ({ ...s, session: data.session, loading: false })))
+    const { data } = supabase.auth.onAuthStateChange((event, session) =>
+      setState((s) => ({ session, loading: false, recovery: event === 'PASSWORD_RECOVERY' ? true : s.recovery })),
+    )
     return () => data.subscription.unsubscribe()
   }, [])
 
-  return <AuthContext.Provider value={state}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ ...state, endRecovery: () => setState((s) => ({ ...s, recovery: false })) }}>{children}</AuthContext.Provider>
 }
 
 export const useAuth = () => useContext(AuthContext)
