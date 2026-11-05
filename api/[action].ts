@@ -147,7 +147,7 @@ async function importInstagram(url: URL): Promise<ImportResult> {
   const desc = metaContent(html, 'og:description') ?? metaContent(html, 'description')
   if (!desc) throw new Error('Instagram nie udostępnił opisu tego posta')
   // Format: "123 likes, 4 comments - autor on 1 March 2024: "opis""
-  const quoted = desc.match(/:\s*["“](.*)["”]\s*\.?$/s)
+  const quoted = desc.match(/:\s*["“](.*)["”]\s*\.?\s*$/s)
   return { platform: 'instagram', url: postUrl, text: quoted ? quoted[1] : desc, imageUrl: metaContent(html, 'og:image') }
 }
 
